@@ -1,0 +1,19 @@
+{
+  "name": "漫画记录",
+  "short_name": "漫画记录",
+  "description": "仅在本机保存数据的漫画阅读进度记录工具",
+  "lang": "zh-CN",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f5f1e8",
+  "theme_color": "#f5f1e8",
+  "icons": [
+    {
+      "src": "./icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
