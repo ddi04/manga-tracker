@@ -149,7 +149,7 @@
           <button class="close-button" type="button" data-close-dialog="linkUpdateDialog" aria-label="关闭">×</button>
         </div>
         <input id="linkUpdateMangaId" type="hidden" />
-        <p class="link-update-help">在漫画网站复制当前章节链接后，点击下面的按钮。新链接会先显示在输入框中，确认无误后再保存。</p>
+        <p class="link-update-help">使用“复制漫画链接”快捷指令后，回到这里粘贴网址。链接和话数确认无误后可以一起保存。</p>
         <button class="secondary-button full-width paste-link-button" id="pasteLinkButton" type="button">粘贴链接</button>
         <label class="field link-preview-field">
           <span>新的继续阅读网址</span>
@@ -162,10 +162,21 @@
             required
           />
         </label>
+        <label class="field link-progress-field">
+          <span>第几话</span>
+          <input
+            id="linkUpdateProgressInput"
+            type="text"
+            maxlength="30"
+            autocomplete="off"
+            placeholder="例如：48、48.5、番外3"
+          />
+          <small>已预填当前进度；留空时保持原进度不变。</small>
+        </label>
         <p class="form-error" id="linkUpdateError" role="alert" hidden></p>
         <div class="sheet-actions">
           <button class="secondary-button" type="button" data-close-dialog="linkUpdateDialog">暂不更新</button>
-          <button class="primary-button" type="submit">保存新链接</button>
+          <button class="primary-button" type="submit">保存链接和话数</button>
         </div>
       </form>
     </dialog>
@@ -199,9 +210,13 @@
             <span><strong>添加到主屏幕</strong><small>查看 iPhone Chrome 安装方法</small></span>
             <span aria-hidden="true">›</span>
           </button>
+          <button class="settings-item" id="shortcutHelpButton" type="button">
+            <span><strong>自动复制漫画链接</strong><small>设置 iPhone 分享快捷指令</small></span>
+            <span aria-hidden="true">›</span>
+          </button>
         </div>
         <input id="importInput" type="file" accept="application/json,.json" hidden />
-        <p class="version">漫画记录 · 本地版 1.0</p>
+        <p class="version">漫画记录 · 本地版 1.1</p>
       </div>
     </dialog>
 
@@ -227,6 +242,36 @@
           <li>选择“添加到主屏幕”，然后确认添加。</li>
         </ol>
         <button class="primary-button full-width" type="button" data-close-dialog="installDialog">知道了</button>
+      </div>
+    </dialog>
+
+    <dialog class="sheet-dialog compact-dialog" id="shortcutDialog">
+      <div class="sheet">
+        <div class="sheet-handle" aria-hidden="true"></div>
+        <div class="sheet-header">
+          <div>
+            <p class="eyebrow">一次设置</p>
+            <h2>自动复制漫画链接</h2>
+          </div>
+          <button class="close-button" type="button" data-close-dialog="shortcutDialog" aria-label="关闭">×</button>
+        </div>
+
+        <p class="shortcut-intro">创建一个只在分享菜单中运行的快捷指令。它不会上传链接，也不会打开另一份漫画记录。</p>
+        <ol class="shortcut-steps">
+          <li><strong>新建快捷指令</strong><span>命名为“复制漫画链接”。</span></li>
+          <li><strong>开启共享表单</strong><span>在详细信息中开启“在共享表单中显示”，接收类型只选择“URL”。</span></li>
+          <li><strong>复制快捷指令输入</strong><span>添加“复制到剪贴板”操作，复制内容选择“快捷指令输入”。</span></li>
+          <li><strong>添加完成通知</strong><span>添加“显示通知”，内容填写“链接已复制，请返回漫画记录”。</span></li>
+        </ol>
+
+        <div class="shortcut-use-tip">
+          <strong>以后这样使用</strong>
+          <p>漫画页面 → 分享 → 复制漫画链接 → 切回主屏幕上的“漫画记录”。</p>
+        </div>
+        <div class="shortcut-actions">
+          <a class="primary-button full-width shortcut-open-link" id="openShortcutsLink" href="shortcuts://create-shortcut">打开“快捷指令”</a>
+          <button class="secondary-button full-width" type="button" data-close-dialog="shortcutDialog">知道了</button>
+        </div>
       </div>
     </dialog>
 

@@ -41,9 +41,12 @@ const elements = {
   linkUpdateMangaId: document.querySelector("#linkUpdateMangaId"),
   linkUpdateMangaTitle: document.querySelector("#linkUpdateMangaTitle"),
   linkUpdateInput: document.querySelector("#linkUpdateInput"),
+  linkUpdateProgressInput: document.querySelector("#linkUpdateProgressInput"),
   linkUpdateError: document.querySelector("#linkUpdateError"),
   pasteLinkButton: document.querySelector("#pasteLinkButton"),
   settingsDialog: document.querySelector("#settingsDialog"),
+  shortcutDialog: document.querySelector("#shortcutDialog"),
+  openShortcutsLink: document.querySelector("#openShortcutsLink"),
   confirmDialog: document.querySelector("#confirmDialog"),
   confirmTitle: document.querySelector("#confirmTitle"),
   installDialog: document.querySelector("#installDialog"),
@@ -59,6 +62,7 @@ function init() {
   restoreSettings();
   render();
   registerServiceWorker();
+  elements.openShortcutsLink.hidden = !isAppleMobileDevice();
   setTimeout(maybeOpenLinkUpdateDialog, 120);
 }
 
@@ -72,6 +76,10 @@ function bindEvents() {
   document.querySelector("#installHelpButton").addEventListener("click", () => {
     elements.settingsDialog.close();
     elements.installDialog.showModal();
+  });
+  document.querySelector("#shortcutHelpButton").addEventListener("click", () => {
+    elements.settingsDialog.close();
+    elements.shortcutDialog.showModal();
   });
   document.querySelector("#cancelDeleteButton").addEventListener("click", closeDeleteDialog);
   document.querySelector("#confirmDeleteButton").addEventListener("click", confirmDelete);
@@ -432,6 +440,7 @@ function maybeOpenLinkUpdateDialog() {
   elements.linkUpdateMangaId.value = record.id;
   elements.linkUpdateMangaTitle.textContent = record.title;
   elements.linkUpdateInput.value = "";
+  elements.linkUpdateProgressInput.value = record.progress;
   elements.linkUpdateError.hidden = true;
   elements.linkUpdateDialog.showModal();
 }
@@ -484,13 +493,16 @@ function saveLinkUpdate(event) {
     return;
   }
 
+  const previousProgress = record.progress;
+  const nextProgress = elements.linkUpdateProgressInput.value.trim();
   record.url = url;
+  if (nextProgress) record.progress = nextProgress;
   record.updatedAt = new Date().toISOString();
   saveRecords();
   clearPendingRead();
   elements.linkUpdateDialog.close();
   render();
-  showToast("继续阅读链接已更新");
+  showToast(nextProgress && nextProgress !== previousProgress ? "链接和话数已更新" : "继续阅读链接已更新");
 }
 
 function showLinkUpdateError(message) {
@@ -622,6 +634,13 @@ function formatRelativeTime(iso) {
 
 function createId() {
   return crypto.randomUUID?.() || `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+function isAppleMobileDevice() {
+  return (
+    /iPhone|iPad|iPod/i.test(navigator.userAgent) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)
+  );
 }
 
 function findRecord(id) {
