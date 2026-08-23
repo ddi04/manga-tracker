@@ -277,8 +277,7 @@ select {
 .progress-panel {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  justify-content: flex-start;
   width: 100%;
   min-height: 44px;
   margin: 11px 0 10px;
@@ -290,22 +289,16 @@ select {
   cursor: pointer;
 }
 
-.progress-panel span,
 .updated-time,
 .notes-preview {
   color: var(--muted);
 }
 
-.progress-panel span {
-  font-size: 0.74rem;
-}
-
 .progress-panel strong {
-  margin-left: auto;
   color: var(--accent);
   font-family: "Songti SC", STSong, serif;
   font-size: 1.25rem;
-  text-align: right;
+  text-align: left;
 }
 
 .tag-list {
