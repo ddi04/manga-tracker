@@ -1,5 +1,7 @@
 const STORAGE_KEY = "manga-tracker.records.v1";
 const SETTINGS_KEY = "manga-tracker.settings.v1";
+const PENDING_READ_KEY = "manga-tracker.pending-read.v1";
+const PENDING_READ_TTL = 24 * 60 * 60 * 1000;
 const BACKUP_VERSION = 1;
 
 const state = {
@@ -34,6 +36,13 @@ const elements = {
   progressMangaId: document.querySelector("#progressMangaId"),
   progressMangaTitle: document.querySelector("#progressMangaTitle"),
   quickProgressInput: document.querySelector("#quickProgressInput"),
+  linkUpdateDialog: document.querySelector("#linkUpdateDialog"),
+  linkUpdateForm: document.querySelector("#linkUpdateForm"),
+  linkUpdateMangaId: document.querySelector("#linkUpdateMangaId"),
+  linkUpdateMangaTitle: document.querySelector("#linkUpdateMangaTitle"),
+  linkUpdateInput: document.querySelector("#linkUpdateInput"),
+  linkUpdateError: document.querySelector("#linkUpdateError"),
+  pasteLinkButton: document.querySelector("#pasteLinkButton"),
   settingsDialog: document.querySelector("#settingsDialog"),
   confirmDialog: document.querySelector("#confirmDialog"),
   confirmTitle: document.querySelector("#confirmTitle"),
@@ -50,6 +59,7 @@ function init() {
   restoreSettings();
   render();
   registerServiceWorker();
+  setTimeout(maybeOpenLinkUpdateDialog, 120);
 }
 
 function bindEvents() {
@@ -74,7 +84,19 @@ function bindEvents() {
   });
   elements.mangaForm.addEventListener("submit", saveMangaFromForm);
   elements.progressForm.addEventListener("submit", saveQuickProgress);
+  elements.linkUpdateForm.addEventListener("submit", saveLinkUpdate);
+  elements.pasteLinkButton.addEventListener("click", pasteLinkFromClipboard);
+  elements.linkUpdateInput.addEventListener("input", () => {
+    elements.linkUpdateError.hidden = true;
+  });
+  elements.linkUpdateDialog.addEventListener("close", clearPendingRead);
   elements.importInput.addEventListener("change", importBackup);
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") setTimeout(maybeOpenLinkUpdateDialog, 120);
+  });
+  window.addEventListener("pageshow", () => setTimeout(maybeOpenLinkUpdateDialog, 120));
+  window.addEventListener("focus", () => setTimeout(maybeOpenLinkUpdateDialog, 120));
 
   document.querySelectorAll("[data-close-dialog]").forEach((button) => {
     button.addEventListener("click", () => {
@@ -214,10 +236,8 @@ function getVisibleRecords() {
 
 function createMangaCard(record) {
   const card = elements.mangaCardTemplate.content.firstElementChild.cloneNode(true);
-  const domain = safeDomain(record.url);
 
   card.dataset.id = record.id;
-  card.querySelector(".site-name").textContent = domain;
   card.querySelector(".manga-title").textContent = record.title;
   card.querySelector(".progress-value").textContent = record.progress ? `第 ${record.progress} 话` : "尚未填写";
   card.querySelector(".updated-time").textContent = `更新于 ${formatRelativeTime(record.updatedAt)}`;
@@ -370,9 +390,112 @@ function incrementProgress(id) {
 function markOpened(id) {
   const record = findRecord(id);
   if (!record) return;
+  localStorage.setItem(PENDING_READ_KEY, JSON.stringify({ id, openedAt: Date.now() }));
   record.updatedAt = new Date().toISOString();
   saveRecords();
   render();
+}
+
+function loadPendingRead() {
+  try {
+    const pending = JSON.parse(localStorage.getItem(PENDING_READ_KEY) || "null");
+    if (!pending || typeof pending.id !== "string" || !Number.isFinite(pending.openedAt)) {
+      clearPendingRead();
+      return null;
+    }
+    if (Date.now() - pending.openedAt > PENDING_READ_TTL) {
+      clearPendingRead();
+      return null;
+    }
+    return pending;
+  } catch {
+    clearPendingRead();
+    return null;
+  }
+}
+
+function clearPendingRead() {
+  localStorage.removeItem(PENDING_READ_KEY);
+}
+
+function maybeOpenLinkUpdateDialog() {
+  if (document.visibilityState === "hidden" || elements.linkUpdateDialog.open) return;
+  const pending = loadPendingRead();
+  if (!pending) return;
+
+  const record = findRecord(pending.id);
+  if (!record) {
+    clearPendingRead();
+    return;
+  }
+
+  elements.linkUpdateMangaId.value = record.id;
+  elements.linkUpdateMangaTitle.textContent = record.title;
+  elements.linkUpdateInput.value = "";
+  elements.linkUpdateError.hidden = true;
+  elements.linkUpdateDialog.showModal();
+}
+
+async function pasteLinkFromClipboard() {
+  elements.linkUpdateError.hidden = true;
+  if (!navigator.clipboard?.readText) {
+    showLinkUpdateError("当前浏览器无法自动读取剪贴板，请长按输入框手动粘贴。");
+    elements.linkUpdateInput.focus();
+    return;
+  }
+
+  try {
+    const clipboardText = (await navigator.clipboard.readText()).trim();
+    if (!/^https?:\/\//i.test(clipboardText)) {
+      showLinkUpdateError("剪贴板里没有有效的网址，请重新复制，或长按输入框手动粘贴。");
+      elements.linkUpdateInput.focus();
+      return;
+    }
+
+    const url = normalizeUrl(clipboardText);
+    if (!url) {
+      showLinkUpdateError("剪贴板里的网址无法识别，请长按输入框手动粘贴。");
+      elements.linkUpdateInput.focus();
+      return;
+    }
+
+    elements.linkUpdateInput.value = url;
+    elements.linkUpdateInput.focus();
+    elements.linkUpdateInput.setSelectionRange(url.length, url.length);
+  } catch (error) {
+    console.warn("读取剪贴板失败", error);
+    showLinkUpdateError("未能读取剪贴板，请允许粘贴，或长按输入框手动粘贴。");
+    elements.linkUpdateInput.focus();
+  }
+}
+
+function saveLinkUpdate(event) {
+  event.preventDefault();
+  const record = findRecord(elements.linkUpdateMangaId.value);
+  if (!record) {
+    showLinkUpdateError("找不到这部漫画，请关闭窗口后重试。");
+    return;
+  }
+
+  const url = normalizeUrl(elements.linkUpdateInput.value);
+  if (!url) {
+    showLinkUpdateError("请输入有效的 http 或 https 网址。");
+    elements.linkUpdateInput.focus();
+    return;
+  }
+
+  record.url = url;
+  record.updatedAt = new Date().toISOString();
+  saveRecords();
+  clearPendingRead();
+  elements.linkUpdateDialog.close();
+  render();
+  showToast("继续阅读链接已更新");
+}
+
+function showLinkUpdateError(message) {
+  elements.linkUpdateError.textContent = message;
+  elements.linkUpdateError.hidden = false;
 }
 
 function requestDelete(id) {
@@ -476,14 +599,6 @@ function normalizeUrl(value) {
     return parsed.href;
   } catch {
     return null;
-  }
-}
-
-function safeDomain(url) {
-  try {
-    return new URL(url).hostname.replace(/^www\./, "");
-  } catch {
-    return "漫画网站";
   }
 }
 

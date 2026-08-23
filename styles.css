@@ -239,7 +239,7 @@ select {
 
 .manga-list {
   display: grid;
-  gap: 16px;
+  gap: 12px;
 }
 
 .manga-card {
@@ -251,19 +251,18 @@ select {
 }
 
 .card-main {
-  padding: 20px;
+  padding: 14px;
 }
 
-.site-name {
-  margin: 0 0 5px;
-  color: var(--muted);
-  font-size: 0.74rem;
+.card-heading {
+  gap: 10px;
 }
 
 .manga-title {
-  max-width: 18ch;
+  flex: 1;
+  min-width: 0;
   font-family: "Songti SC", STSong, serif;
-  font-size: 1.38rem;
+  font-size: 1.22rem;
   line-height: 1.25;
 }
 
@@ -276,19 +275,22 @@ select {
 }
 
 .progress-panel {
-  display: grid;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   width: 100%;
-  margin: 18px 0 14px;
-  padding: 14px 16px;
+  min-height: 44px;
+  margin: 11px 0 10px;
+  padding: 9px 12px;
   border: 0;
-  border-radius: 16px;
+  border-radius: 13px;
   text-align: left;
   background: #f4efe5;
   cursor: pointer;
 }
 
 .progress-panel span,
-.progress-panel small,
 .updated-time,
 .notes-preview {
   color: var(--muted);
@@ -299,49 +301,46 @@ select {
 }
 
 .progress-panel strong {
-  margin: 3px 0 1px;
+  margin-left: auto;
   color: var(--accent);
   font-family: "Songti SC", STSong, serif;
-  font-size: 1.55rem;
-}
-
-.progress-panel small {
-  font-size: 0.7rem;
+  font-size: 1.25rem;
+  text-align: right;
 }
 
 .tag-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 7px;
+  gap: 5px;
 }
 
 .tag {
-  padding: 5px 9px;
+  padding: 4px 8px;
   border-radius: 999px;
   color: var(--green);
   background: #dfebe3;
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   font-weight: 680;
 }
 
 .notes-preview {
   display: -webkit-box;
-  margin: 14px 0 0;
+  margin: 9px 0 0;
   overflow: hidden;
-  font-size: 0.84rem;
-  line-height: 1.55;
+  font-size: 0.78rem;
+  line-height: 1.4;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 1;
 }
 
 .updated-time {
-  margin: 14px 0 0;
-  font-size: 0.7rem;
+  margin: 7px 0 0;
+  font-size: 0.66rem;
 }
 
 .card-actions {
-  gap: 10px;
-  padding: 13px 16px;
+  gap: 8px;
+  padding: 10px 12px;
   border-top: 1px solid var(--line);
   background: rgba(245, 241, 232, 0.65);
 }
@@ -508,6 +507,21 @@ select:focus,
   font-size: 0.82rem;
 }
 
+.link-update-help {
+  margin: -4px 0 14px;
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.55;
+}
+
+.paste-link-button {
+  margin-bottom: 16px;
+}
+
+.link-preview-field {
+  margin-bottom: 12px;
+}
+
 .form-delete-button {
   width: 100%;
   margin-top: 2px;
@@ -661,9 +675,6 @@ select:focus,
     display: block;
   }
 
-  .manga-title {
-    max-width: 14ch;
-  }
 }
 
 @media (min-width: 700px) {

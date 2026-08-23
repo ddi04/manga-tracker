@@ -2,7 +2,10 @@
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+    />
     <meta name="theme-color" content="#f5f1e8" />
     <meta name="description" content="仅在本机保存数据的漫画阅读进度记录工具" />
     <title>漫画记录</title>
@@ -135,6 +138,38 @@
       </form>
     </dialog>
 
+    <dialog class="sheet-dialog compact-dialog" id="linkUpdateDialog">
+      <form class="sheet" id="linkUpdateForm" method="dialog">
+        <div class="sheet-handle" aria-hidden="true"></div>
+        <div class="sheet-header">
+          <div>
+            <p class="eyebrow">更新阅读位置</p>
+            <h2 id="linkUpdateMangaTitle">漫画名称</h2>
+          </div>
+          <button class="close-button" type="button" data-close-dialog="linkUpdateDialog" aria-label="关闭">×</button>
+        </div>
+        <input id="linkUpdateMangaId" type="hidden" />
+        <p class="link-update-help">在漫画网站复制当前章节链接后，点击下面的按钮。新链接会先显示在输入框中，确认无误后再保存。</p>
+        <button class="secondary-button full-width paste-link-button" id="pasteLinkButton" type="button">粘贴链接</button>
+        <label class="field link-preview-field">
+          <span>新的继续阅读网址</span>
+          <input
+            id="linkUpdateInput"
+            type="text"
+            inputmode="url"
+            autocomplete="off"
+            placeholder="也可以长按这里手动粘贴"
+            required
+          />
+        </label>
+        <p class="form-error" id="linkUpdateError" role="alert" hidden></p>
+        <div class="sheet-actions">
+          <button class="secondary-button" type="button" data-close-dialog="linkUpdateDialog">暂不更新</button>
+          <button class="primary-button" type="submit">保存新链接</button>
+        </div>
+      </form>
+    </dialog>
+
     <dialog class="sheet-dialog compact-dialog" id="settingsDialog">
       <div class="sheet">
         <div class="sheet-handle" aria-hidden="true"></div>
@@ -201,16 +236,12 @@
       <article class="manga-card">
         <div class="card-main">
           <div class="card-heading">
-            <div>
-              <p class="site-name"></p>
-              <h2 class="manga-title"></h2>
-            </div>
+            <h2 class="manga-title"></h2>
             <button class="card-menu-button" type="button" aria-label="编辑漫画">编辑</button>
           </div>
           <button class="progress-panel" type="button">
             <span>当前进度</span>
             <strong class="progress-value"></strong>
-            <small>点击直接修改</small>
           </button>
           <div class="tag-list"></div>
           <p class="notes-preview" hidden></p>
